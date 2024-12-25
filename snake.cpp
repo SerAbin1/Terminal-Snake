@@ -30,6 +30,7 @@ Save high scores to a file and display them at the start.
 
 Allow the player to set the grid size or snake speed.*/
 
+#include <cctype>
 #include <fstream>
 #include <ios>
 #include <iostream>
@@ -63,16 +64,15 @@ int main() {
     while (!game_over) {
         currScore = game(game_over);
         clear();
-        std::cout<<"Press p to play again and q to quit.";
+        mvprintw(0, 0, "Press p to play again and q to quit");
+        highScore = highScorer(currScore);
+        mvprintw(1,1, "The highscore is: %d", highScore);
         refresh();
         char choice;
         std::cin>>choice;
         if (choice=='p') {
             game_over = false;
         }
-        highScore = highScorer(currScore);
-        std::cout<<highScore;
-        refresh();
     }
     
     endwin();
@@ -112,7 +112,7 @@ int game(bool &game_over){
                 game_over = true; // Self-collision
             }
         }
-
+        
         // Check if food is eaten
         if (new_head.x == food.x && new_head.y == food.y) {
             food = {rand() % max_y, rand() % max_x}; // Place new food
@@ -133,20 +133,36 @@ int game(bool &game_over){
     return currScore;
 }
 
-int highScorer(int &currScore){
-    int highScore = 0;
+// Helper function to check if a string contains only digits
+bool isValidNumber(const std::string &str) {
+    for (char c : str) {
+        if (!std::isdigit(c)) return false;
+    }
+    return !str.empty(); // Ensure the string is not empty
+}
+
+int highScorer(int &currScore) {
+    int highScore = 0; // Default high score
     std::string line;
+
+    // Open file for reading
     std::ifstream file("scoretracker.txt");
     if (file.is_open()) {
-        if(std::getline(file, line))
-            highScore = std::stoi(line);
+        if (std::getline(file, line) && isValidNumber(line)) {
+            highScore = std::stoi(line); // Convert to integer
+        }
+        file.close();
     }
-    if(highScore<currScore){
-        std::ofstream outfile("scoretracker.txt", std::ios::trunc);
-            if (outfile.is_open()) {
-                outfile<<highScore;
-                outfile.close();
-            } 
+
+    // If current score is higher, update the file
+    if (currScore > highScore) {
+        highScore = currScore; // Update high score
+        std::ofstream outfile("scoretracker.txt", std::ios::trunc); // Overwrite file
+        if (outfile.is_open()) {
+            outfile << highScore;
+            outfile.close();
+        }
     }
+
     return highScore;
 }
