@@ -1,29 +1,9 @@
 /*Features to Add
 
-1. Scoring:
-
-Keep track of the snake's length or the number of food items eaten.
-
-Display the score on the screen.
-
-
-
-2. Levels:
-
-Increase the snake’s speed (reduce timeout() delay) as the game progresses.
-
-
 
 3. Obstacles:
 
 Add walls or randomly placed obstacles to increase difficulty.
-
-
-
-4. Persistence:
-
-Save high scores to a file and display them at the start.
-
 
 
 5. Customizations:
@@ -42,6 +22,7 @@ Allow the player to set the grid size or snake speed.*/
 
 int game(bool&);
 int highScorer(int&);
+void levelCalculater(int&);
 
 struct Point {
     int x, y;
@@ -90,7 +71,8 @@ int game(bool &game_over){
     // Main game loop
     while (!game_over) {
         // Input handling
-        timeout(100);
+        int level = 200;
+        timeout(level);
         int ch = getch();
         switch (ch) {
             case KEY_UP:    if (dir_y != 1) { dir_y = -1; dir_x = 0; } break;
@@ -129,6 +111,9 @@ int game(bool &game_over){
         }
         mvprintw(0, 0, "%d", currScore);
         refresh();
+        if (currScore>2) {
+            levelCalculater(level);
+        }
     }
     return currScore;
 }
@@ -165,4 +150,10 @@ int highScorer(int &currScore) {
     }
 
     return highScore;
+}
+
+void levelCalculater(int& level){
+    if (!(level<1)) {
+        level -= 10;    
+    }
 }
