@@ -29,24 +29,25 @@ struct Point {
 };
 
 int main() {
-    // Initialize ncurses
+    //Initialize ncurses for terminal-based graphical interface.
     initscr();
-    noecho(); //To disable user input echo,displaying the char typed b                y user.
-    cbreak(); //Disable line buffering. Send input directly without wa               iting for enter.
-    keypad(stdscr, TRUE); //for arrow key usage.
+    noecho(); //Disable input echo to hide characters typed by the user.
+    cbreak(); //Disable line buffering to proccess input immediately withou waiting for enter.
+    keypad(stdscr, TRUE); //Enable arrow key and special key handling.
     curs_set(0); //To hide the cursor.
     timeout(100); // Non-blocking input (100ms delay)
     
-    int currScore = 0; //to keep track of the hcurrent core.
-    int highScore = 0; //to keeep track of the hig sckore.
+    int currentScore = 0; //to keep track of the current score.
+    int highScore = 0; //to keeep track of the high score.
 
     bool game_over = false;
     
+    // Repeat the game if 'p' is pressed; quit otherwise.
     while (!game_over) {
-        currScore = game(game_over);
+        currentScore = game(game_over);
         clear();
         mvprintw(0, 0, "Press p to play again and q to quit");
-        highScore = highScorer(currScore);
+        highScore = highScorer(currentScore);
         mvprintw(1,1, "The highscore is: %d", highScore);
         refresh();
         char choice;
@@ -62,18 +63,18 @@ int main() {
     
 int game(bool &game_over){
     // Set up game variables
-    int max_x, max_y, currScore;
-    getmaxyx(stdscr, max_y, max_x); //gets the size of the window and                                       stores it in the variables.
-    std::deque<Point> snake = {{max_y / 2, max_x / 2}}; // Snake start                                                      s at the center
+    int max_x, max_y, currentScore;
+    getmaxyx(stdscr, max_y, max_x); //Get window dimensions.
+    std::deque<Point> snake = {{max_y / 2, max_x / 2}}; // Snake starts at the center
     Point food = {rand() % max_y, rand() % max_x};
     int dir_x = 1, dir_y = 0; // Initial direction (right)
 
-    // Main game loop
     while (!game_over) {
-        // Input handling
+        //Initializes level to track the speed.
         int level = 200;
         timeout(level);
         int ch = getch();
+        // Allow movement, preventing reverse direction.
         switch (ch) {
             case KEY_UP:    if (dir_y != 1) { dir_y = -1; dir_x = 0; } break;
             case KEY_DOWN:  if (dir_y != -1) { dir_y = 1; dir_x = 0; } break;
@@ -98,7 +99,7 @@ int game(bool &game_over){
         // Check if food is eaten
         if (new_head.x == food.x && new_head.y == food.y) {
             food = {rand() % max_y, rand() % max_x}; // Place new food
-            currScore++;
+            currentScore++;
         } else {
             snake.pop_back(); // Remove tail
         }
@@ -109,13 +110,14 @@ int game(bool &game_over){
         for (const auto& segment : snake) {
             mvprintw(segment.x, segment.y, "#"); // Draw snake
         }
-        mvprintw(0, 0, "%d", currScore);
+        mvprintw(0, 0, "%d", currentScore);
         refresh();
-        if (currScore>2) {
+        // Increase difficulty by reducing delay after the player eats more than 2 food items.
+        if (currentScore>2) {
             levelCalculater(level);
         }
     }
-    return currScore;
+    return currentScore;
 }
 
 // Helper function to check if a string contains only digits
@@ -126,8 +128,8 @@ bool isValidNumber(const std::string &str) {
     return !str.empty(); // Ensure the string is not empty
 }
 
-int highScorer(int &currScore) {
-    int highScore = 0; // Default high score
+int highScorer(int &currentScore) {
+    int highScore = 0;
     std::string line;
 
     // Open file for reading
@@ -140,8 +142,8 @@ int highScorer(int &currScore) {
     }
 
     // If current score is higher, update the file
-    if (currScore > highScore) {
-        highScore = currScore; // Update high score
+    if (currentScore > highScore) {
+        highScore = currentScore; //Update high score
         std::ofstream outfile("scoretracker.txt", std::ios::trunc); // Overwrite file
         if (outfile.is_open()) {
             outfile << highScore;
@@ -152,6 +154,7 @@ int highScorer(int &currScore) {
     return highScore;
 }
 
+//Increase speed as level increases by reducing the timeout.
 void levelCalculater(int& level){
     if (!(level<1)) {
         level -= 10;    
