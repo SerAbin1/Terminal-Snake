@@ -68,6 +68,12 @@ int game(bool &game_over){
     std::deque<Point> snake = {{max_y / 2, max_x / 2}}; // Snake starts at the center
     Point food = {rand() % max_y, rand() % max_x};
     int dir_x = 1, dir_y = 0; // Initial direction (right)
+    // Place obstruction
+    std::deque<Point> obstruction = {{rand() % max_y, rand() % max_x}};
+    for (int i = 1; i < 5; i++) {
+           Point new_obstruction = {obstruction.front().x + 1, obstruction.front().y + 1  };
+           obstruction.push_front(new_obstruction);
+      }
 
     while (!game_over) {
         //Initializes level to track the speed.
@@ -95,6 +101,11 @@ int game(bool &game_over){
                 game_over = true; // Self-collision
             }
         }
+        for(int i = 0; i < 5; i++){
+            if (snake.front().x == obstruction[i].x && snake.front().y == obstruction[i].y) {
+                game_over = true; // Obstruction collision
+            }
+        }
         
         // Check if food is eaten
         if (new_head.x == food.x && new_head.y == food.y) {
@@ -109,6 +120,9 @@ int game(bool &game_over){
         mvprintw(food.x, food.y, "O"); // Draw food
         for (const auto& segment : snake) {
             mvprintw(segment.x, segment.y, "#"); // Draw snake
+        }
+        for(int i = 0; i < 5; i++){
+            mvprintw(obstruction[i].x, obstruction[i].y, "&"); //Draw obstruction
         }
         mvprintw(0, 0, "%d", currentScore);
         refresh();
