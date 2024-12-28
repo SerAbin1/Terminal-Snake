@@ -1,12 +1,4 @@
-/*Features to Add
-
-
-3. Obstacles:
-
-Add walls or randomly placed obstacles to increase difficulty.
-
-
-5. Customizations:
+/* Customizations:
 
 Allow the player to set the grid size or snake speed.*/
 
