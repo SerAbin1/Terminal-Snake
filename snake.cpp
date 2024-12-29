@@ -1,7 +1,3 @@
-/* Customizations:
-
-Allow the player to set the grid size or snake speed.*/
-
 #include <cctype>
 #include <fstream>
 #include <ios>
